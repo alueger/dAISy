@@ -3,29 +3,43 @@
  * Author: Adrian Studer
  */
 
+//                   MSP430F552x
+//                 -----------------
+//            /|\ |                 |
+//             |  |                 |
+//    Master---+->|RST              |
+//                |                 |
+//                |             P3.3|-> Data Out (UCA0SIMO)
+//                |                 |
+//                |             P3.4|<- Data In (UCA0SOMI)
+//                |                 |
+//                |             P2.7|-> Serial Clock Out (UCA0CLK)
+
 #include <msp430.h>
 #include <inttypes.h>
 #include "spi.h"
 
-#define SPI_CLK		BIT5	// clock pin 1.5
-#define SPI_MISO	BIT6	// MISO pin 1.6
-#define SPI_MOSI	BIT7	// MOSI pin 1.7
+#define SPI_CLK		BIT7	// clock pin 2.7 SI4362 CLK
+#define SPI_MISO	BIT4	// MISO pin 3.4 SI4362 SDO
+#define SPI_MOSI	BIT3	// MOSI pin 3.3 SI4362 SDI
 
 void spi_init(void)
 {
-	// initialize SPI pins
-	P1DIR |= SPI_CLK | SPI_MOSI;					// set SPI clock, MOSI pins to outputs
-	P1DIR &= ~SPI_MISO;								// set SPI MISO as input
-	P1SEL |= SPI_CLK | SPI_MOSI | SPI_MISO;			// connect pins to USCI (secondary peripheral)
-	P1SEL2 |= SPI_CLK | SPI_MOSI | SPI_MISO;		// connect pins to USCI (secondary peripheral)
-	P1OUT &= ~(SPI_CLK | SPI_MOSI);					// set clock and MOSI pins to low
+    P3SEL |= SPI_MISO+SPI_MOSI;               // P3.3,4 option select
+    P2SEL |= SPI_CLK;                         // P2.7 option select
 
-	// configure UCSI B0 for SPI
-	UCB0CTL1 |= UCSWRST;							// reset USCI B0
-	UCB0CTL0 = UCCKPH | UCMST | UCMSB | UCMODE_0 | UCSYNC;	// read on rising edge, inactive clk low, 8 bit, master mode, 3 pin SPI, synchronous
-	UCB0BR0 = 2; UCB0BR1 = 0;						// clock scaler = 2, i.e 8 MHz SPI clock (Si4362 max is 10 MHz)
-	UCB0CTL1 = UCSSEL_2;							// clock source SMCLK, clear UCSWRST to enable USCI B0
-	UCB0CTL1 &= ~UCSWRST;							// enable USCI B0
+    P3OUT &= ~(SPI_MOSI);
+    P2OUT &= ~(SPI_CLK);
+
+    UCA0CTL1 |= UCSWRST;                      // **Put state machine in reset**
+    UCA0CTL0 |= UCMST+UCSYNC+UCCKPH+UCMSB+UCMODE_0;    // 3-pin, 8-bit SPI master
+                                              // Clock polarity high, MSB
+    UCA0CTL1 |= UCSSEL_2;                     // SMCLK
+    UCA0BR0 = 25;                              // /3 = ca.8MHz
+    UCA0BR1 = 0;                              //
+    UCA0MCTL = 0;                             // No modulation
+    UCA0CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
+
 }
 
 

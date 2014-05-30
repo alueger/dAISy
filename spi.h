@@ -10,9 +10,9 @@ void spi_init(void);
 
 inline uint8_t spi_transfer(const uint8_t data)
 {
-	UCB0TXBUF = data;
-	while (UCB0STAT & UCBUSY);
-	return UCB0RXBUF;
+	UCA0TXBUF = data;
+	while (UCA0STAT & UCBUSY);
+	return UCA0RXBUF;
 }
 
 #endif /* SPI_H_ */

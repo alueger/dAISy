@@ -9,6 +9,8 @@
 #include <msp430.h> 
 #include <inttypes.h>
 
+#include "comun.h"
+
 #include "fifo.h"
 #include "uart.h"
 #include "dec_to_str.h"
@@ -19,11 +21,17 @@
 
 #define DEBUG_MESSAGES			// un-comment to send error messages over UART
 
+
 // LED helpers for debugging
-#define LED1	BIT0
+#define LED1		BIT0
 #define LED1_ON		P1OUT |= LED1
 #define LED1_OFF 	P1OUT &= ~LED1
 #define LED1_TOGGLE	P1OUT ^= LED1
+
+#define LED2		BIT7
+#define LED2_ON		P4OUT |= LED2
+#define LED2_OFF 	P4OUT &= ~LED2
+#define LED2_TOGGLE	P4OUT ^= LED2
 
 #ifdef TEST
 void test_main(void);
@@ -39,11 +47,8 @@ int main(void)
 {
 	// configure WDT
 	WDTCTL = WDTPW | WDTHOLD;				// stop watch dog timer
+	_25mhz();
 
-	// set clock to 16MHz
-	BCSCTL1 = CALBC1_16MHZ;
-	DCOCTL = CALDCO_16MHZ;
-	BCSCTL2 = 0;							// MCLK and SMCLK = DCO = 16MHz
 
 #ifdef TEST
 	// when compiled in test mode, use different main
@@ -55,8 +60,15 @@ int main(void)
 	P1DIR |= LED1;
 	LED1_OFF;
 
+	P4DIR |= LED2;
+	LED2_OFF;
+
 	// setup uart
 	uart_init();
+
+#ifdef DEBUG_MESSAGES
+	uart_send_string("Hola mundo!\r\n");
+#endif
 
 	// setup packet handler
 	ph_setup();
@@ -71,17 +83,20 @@ int main(void)
 	// verify that radio configuration was successful
 	radio_get_chip_status(0);
 	if (radio_buffer.chip_status.chip_status & RADIO_CMD_ERROR) {	// check for command error
+		uart_send_string("Error inicializando radio!!!\r\n");
 		while (1) {
 			LED1_TOGGLE;
 			_delay_cycles(8000000);			// blink LED if there was an error
 		}
 	}
 
+
 	// start packet receiving
 	ph_start();
 
 #ifdef DEBUG_MESSAGES
 	uart_send_string("dAISy 0.2 started\r\n");
+	LED2_ON;
 #endif
 
 	while (1) {
@@ -236,9 +251,8 @@ void test_error(void)
 #endif
 
 // handler for unexpected interrupts
-#pragma vector=ADC10_VECTOR,COMPARATORA_VECTOR,NMI_VECTOR,PORT1_VECTOR,	\
-			   TIMER0_A0_VECTOR,TIMER0_A1_VECTOR,TIMER1_A0_VECTOR,TIMER1_A1_VECTOR,		\
-			   USCIAB0RX_VECTOR,USCIAB0TX_VECTOR,WDT_VECTOR
+#pragma vector=unused_interrupts
+
 __interrupt void ISR_trap(void)
 {
 	// trap CPU & code execution here with an infinite loop

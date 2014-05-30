@@ -91,7 +91,7 @@ void radio_configure(void)
 {
 	// reset radio: SDN=1, wait >1us, SDN=0
 	P2OUT |= RADIO_SDN;
-	_delay_cycles(1000);
+	_delay_cycles(2000);
 	P2OUT &= ~RADIO_SDN;
 
 	while (!RADIO_READY);						// wait for chip to wake up

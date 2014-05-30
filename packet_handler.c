@@ -19,6 +19,11 @@
 #define LED1_OFF 	P1OUT &= ~LED1
 #define LED1_TOGGLE	P1OUT ^= LED1
 
+#define LED2		BIT7
+#define LED2_ON		P4OUT |= LED2
+#define LED2_OFF 	P4OUT &= ~LED2
+#define LED2_TOGGLE	P4OUT ^= LED2
+
 // sync word for AIS - only used for test
 #define AIS_SYNC_WORD		0x7e
 
@@ -316,6 +321,7 @@ __interrupt void ph_irq_handler(void)
 
 		if (ph_state == PH_STATE_RESET) {					// if next state is reset
 			ph_radio_channel ^= 1;							// toggle radio channel between 0 and 1
+			LED2_TOGGLE;									// Toggle LED2
 #ifndef TEST
 			radio_start_rx(ph_radio_channel, 0, 0, RADIO_STATE_NO_CHANGE, RADIO_STATE_NO_CHANGE, RADIO_STATE_NO_CHANGE); // initiate channel hop
 #endif
