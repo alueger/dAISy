@@ -1,3 +1,5 @@
+This fork is a MSP-EXP430F5529LP LaunchPad version.
+
 dAISy - A simple DIY AIS Receiver
 =================================
 
