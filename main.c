@@ -61,7 +61,7 @@ int main(void)
 	LED1_OFF;
 
 	P4DIR |= LED2;
-	LED2_OFF;
+	LED2_ON;
 
 	// setup uart
 	uart_init();
@@ -96,12 +96,14 @@ int main(void)
 
 #ifdef DEBUG_MESSAGES
 	uart_send_string("dAISy 0.2 started\r\n");
-	LED2_ON;
+	LED2_OFF;
 #endif
 
 	while (1) {
 
-		__low_power_mode_4();	// deep sleep until something worthwhile happens
+		LPM0;	// deep sleep until something worthwhile happens
+
+		__no_operation();
 
 		ph_loop();	// packet handler house-keeping, e.g. channel hopping
 
@@ -165,9 +167,10 @@ int main(void)
 			uart_send_string(str_output_buffer);
 			uart_send_string("dBm\r\n");
 #endif
-
+			LED2_ON;
 			nmea_process_packet();					// process packet (NMEA message will be sent over UART)
 			fifo_remove_packet();					// remove processed packet from FIFO
+			LED2_OFF;
 		}
 
 		// enter low power mode LPM0 (everything off)

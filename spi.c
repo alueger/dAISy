@@ -34,8 +34,8 @@ void spi_init(void)
     UCA0CTL1 |= UCSWRST;                      // **Put state machine in reset**
     UCA0CTL0 |= UCMST+UCSYNC+UCCKPH+UCMSB+UCMODE_0;    // 3-pin, 8-bit SPI master
                                               // Clock polarity high, MSB
-    UCA0CTL1 |= UCSSEL_2;                     // SMCLK
-    UCA0BR0 = 25;                              // /3 = ca.8MHz
+    UCA0CTL1 |= UCSSEL_2;                     // SMCLK, keeps reset
+    UCA0BR0 = 5;         	                  // /25 = ca.1MHz
     UCA0BR1 = 0;                              //
     UCA0MCTL = 0;                             // No modulation
     UCA0CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**

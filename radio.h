@@ -18,7 +18,7 @@
 
 #define RADIO_CTS			RADIO_GPIO_1	// when low, chip is busy/not ready
 #ifndef TEST
-#define RADIO_READY	(P2IN & RADIO_CTS)
+#define RADIO_READY			(P2IN & RADIO_CTS)
 #else
 #define RADIO_READY (1)
 #endif

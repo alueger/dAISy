@@ -330,7 +330,7 @@ __interrupt void ph_irq_handler(void)
 	}
 
 	if (wake_up)
-		__low_power_mode_off_on_exit();
+		LPM0_EXIT;
 
 	PH_DATA_IFG = 0;							// clear all pin interrupt flags
 }
